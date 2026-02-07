@@ -1,10 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path'); // ⬅️ ADD THIS
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 // 1. Message Config (Data Mapping)
 const STATUS_MESSAGES = {
@@ -63,8 +66,13 @@ app.post('/api/update-patient-status', async (req, res) => {
         message: "Status updated and family notified" 
     });
 });
+// Serve main frontend page
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log("Server running on port", PORT);
 });
