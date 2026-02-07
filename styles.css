@@ -1,0 +1,137 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, Arial;
+  background: linear-gradient(135deg,#e0f2fe,#f0f9ff,#ecfeff);
+}
+
+/* top bar */
+
+.topbar {
+  background: #0f172a;
+  color: white;
+  padding: 18px 32px;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+/* hero */
+
+.hero {
+  text-align: center;
+  padding: 60px 20px 30px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 36px;
+  color: #0f172a;
+}
+
+.hero p {
+  margin-top: 10px;
+  color: #334155;
+  font-size: 18px;
+}
+
+/* role section layout */
+
+.role-section {
+  max-width: 1100px;
+  margin: 40px auto 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  padding: 0 20px;
+}
+
+/* big role boxes */
+
+.role-box {
+  background: white;
+  border-radius: 18px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  transition: 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.role-box:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+/* color themes */
+
+.role-box.doctor {
+  border-top: 8px solid #2563eb;
+}
+
+.role-box.patient {
+  border-top: 8px solid #14b8a6;
+}
+
+/* icon */
+
+.role-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+/* text */
+
+.role-box h2 {
+  margin: 10px 0 15px;
+}
+
+.role-box ul {
+  padding-left: 18px;
+  color: #475569;
+  line-height: 1.7;
+}
+
+/* buttons */
+
+.role-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  transition: 0.25s;
+}
+
+.doctor .role-btn {
+  background: #2563eb;
+}
+
+.patient .role-btn {
+  background: #14b8a6;
+}
+
+.role-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+/* footer */
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  background: #0f172a;
+  color: #cbd5f1;
+}
+
+/* responsive */
+
+@media (max-width: 800px) {
+  .role-section {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Patient Details</h2>
+
+    <!-- Toggle to Elderly Mode -->
+    <a href="elderly-mode.html" style="display:block; text-align:center; margin-bottom:20px; text-decoration:none; background:#64748b; color:white; padding:12px; border-radius:50px; font-weight:bold;">👴 Switch to Elderly Friendly Mode</a>
+
+    <!-- Toggle to Hindi Voice Mode -->
+    <a href="bhasha-setu.html" style="display:block; text-align:center; margin-bottom:20px; text-decoration:none; background:#ea580c; color:white; padding:12px; border-radius:50px; font-weight:bold;">🇮🇳 Bhasha-Setu (Hindi Voice Mode)</a>
+
+    <form id="patientForm">
+
+
+        <label>Name</label>
+        <input type="text" required>
+
+        <label>Age</label>
+        <input type="number" required>
+
+        <label>Phone</label>
+        <input type="tel" required>
+
+        <label>Symptoms</label>
+        <div class="symptoms">
+            <label class="symptom-item">
+                <input type="checkbox"> Fever
+            </label>
+
+            <label class="symptom-item">
+                <input type="checkbox"> Cough
+            </label>
+
+            <label class="symptom-item">
+                <input type="checkbox"> Chest Pain
+            </label>
+
+            <label class="symptom-item">
+                <input type="checkbox"> Breathlessness
+            </label>
+
+            <label class="symptom-item">
+                <input type="checkbox"> Fatigue
+            </label>
+        </div>
+
+        <label>Existing Conditions (optional)</label>
+        <textarea rows="3"></textarea>
+
+        <button type="submit">Generate Token</button>
+
+    </form>
+</div>
+<script src="script.js"></script>
+
+</body>
+</html>

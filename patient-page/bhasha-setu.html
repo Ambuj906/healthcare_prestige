@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhasha-Setu: Hindi Voice Triage</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f9ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 { color: #0f172a; margin-bottom: 10px; }
+        p.subtitle { color: #64748b; margin-bottom: 30px; }
+
+        /* 1. HTML Structure: Microphone Button */
+        .mic-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            font-size: 32px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            position: relative;
+        }
+        .mic-btn:hover { background: #1d4ed8; }
+        .mic-btn.listening { background: #ef4444; }
+        
+        /* Pulse Animation */
+        .pulse-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.4);
+            z-index: 1;
+            animation: pulse 1.5s infinite;
+            display: none;
+        }
+        .mic-btn.listening + .pulse-ring { display: block; }
+
+        @keyframes pulse {
+            0% { width: 100%; height: 100%; opacity: 1; }
+            100% { width: 250%; height: 250%; opacity: 0; }
+        }
+
+        /* Transcript Area */
+        .transcript-box {
+            min-height: 80px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: #1e293b;
+            font-size: 1.1rem;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Form Styles */
+        .triage-form { text-align: left; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background 0.5s;
+        }
+        
+        /* 4. Visual Feedback: Highlight */
+        .auto-filled {
+            background-color: #fef08a !important; /* Yellow-200 */
+            border-color: #eab308;
+        }
+
+        /* Toast Notification */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.5s, bottom 0.5s;
+        }
+        .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bhasha-Setu 🇮🇳</h1>
+    <p class="subtitle">Speak in Hindi to Auto-fill Form</p>
+
+    <div class="mic-wrapper">
+        <button id="micBtn" class="mic-btn" onclick="toggleListening()">🎙️</button>
+        <div class="pulse-ring"></div>
+    </div>
+
+    <div class="transcript-box" id="transcript">Tap mic and say: "Mera pet dard kar raha hai..."</div>
+
+    <div class="triage-form">
+        <div class="form-group">
+            <label>Patient Name</label>
+            <input type="text" id="patientName" placeholder="Speak 'Mera naam...' or Type">
+        </div>
+        <div class="form-group">
+            <label>Detected Symptom (English)</label>
+            <input type="text" id="symptom" placeholder="Waiting..." readonly>
+        </div>
+        <div class="form-group">
+            <label>Pain Level (1-10)</label>
+            <input type="number" id="pain_level" placeholder="0" readonly>
+        </div>
+        <div class="form-group">
+            <label>Duration / Notes</label>
+            <input type="text" id="duration" placeholder="Duration" readonly>
+        </div>
+    </div>
+
+    <button onclick="submitPatient()" style="margin-top: 20px; background: #10b981; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; width: 100%; max-width: 500px;">Generate Token & Submit</button>
+</div>
+
+<div id="toast" class="toast">✅ Translated from Hindi to English</div>
+
+<script>
+    // 2. Speech Recognition Logic (Web Speech API)
+    const micBtn = document.getElementById('micBtn');
+    const transcriptDisplay = document.getElementById('transcript');
+    
+    // Initialize Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        transcriptDisplay.innerText = "⚠️ Browser not supported. Please use Google Chrome.";
+        micBtn.disabled = true;
+    }
+
+    const recognition = new SpeechRecognition();
+    
+    recognition.lang = 'hi-IN'; // Hindi India
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    let isListening = false;
+
+    function toggleListening() {
+        if (isListening) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    }
+
+    recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add('listening');
+        transcriptDisplay.innerText = "Listening (सुन रहा हूँ)...";
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove('listening');
+    };
+
+    recognition.onresult = (event) => {
+        const hindiText = event.results[0][0].transcript;
+        transcriptDisplay.innerText = `You said: "${hindiText}"`;
+        translateAndFill(hindiText);
+    };
+
+    recognition.onerror = (event) => {
+        isListening = false;
+        micBtn.classList.remove('listening');
+        transcriptDisplay.innerText = "Error: " + event.error + ". (Check microphone permissions)";
+    };
+
+    // 3. The "Smart Translation" Engine (The Brain)
+    function translateAndFill(hindiText) {
+        const text = hindiText.toLowerCase();
+        
+        let symptom = "General Discomfort";
+        let pain = 3;
+        let duration = "Unknown";
+
+        // Name Extraction (Simple)
+        if (text.includes("naam") || text.includes("name")) {
+            const parts = text.split(/naam|name/);
+            if (parts[1]) {
+                const extractedName = parts[1].trim().split(" ")[0]; // Get first word after "naam"
+                if (extractedName && !["hai", "is", "mera", "my"].includes(extractedName)) {
+                    fillField("patientName", extractedName);
+                }
+            }
+        }
+
+        // Expanded Keyword Mapping (Optimized)
+        const symptomMap = [
+            { keywords: ["chaati", "dil", "chest", "heart", "attack"], label: "Chest Pain", pain: 10 },
+            { keywords: ["saans", "breath", "asthma"], label: "Breathing Difficulty", pain: 9 },
+            { keywords: ["khoon", "bleeding", "cut", "chot", "accident", "takkar"], label: "Bleeding / Trauma", pain: 9 },
+            { keywords: ["bukhar", "fever", "garam", "tap"], label: "High Fever", pain: 7 },
+            { keywords: ["pet", "stomach", "dard", "pain"], label: "Stomach Pain", pain: 6 },
+            { keywords: ["sar", "sir", "head", "headache"], label: "Severe Headache", pain: 5 },
+            { keywords: ["ulti", "vomit", "chakkar"], label: "Vomiting / Dizziness", pain: 5 }
+        ];
+
+        for (let item of symptomMap) {
+            if (item.keywords.some(k => text.includes(k))) {
+                symptom = item.label;
+                pain = item.pain;
+                break;
+            }
+        }
+
+        // Fill Form
+        fillField("symptom", symptom);
+        fillField("pain_level", pain);
+        fillField("duration", "Captured via Voice");
+
+        // 4. Visual Feedback: Toast
+        showToast();
+        
+        // Audio Feedback (Text-to-Speech)
+        speakBack(`Detected ${symptom}. Pain level ${pain}.`);
+    }
+
+    function fillField(id, value) {
+        const field = document.getElementById(id);
+        field.value = value;
+        
+        // Highlight Effect
+        field.classList.add('auto-filled');
+        setTimeout(() => {
+            field.classList.remove('auto-filled');
+        }, 2000);
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.className = "toast show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    function speakBack(message) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'hi-IN'; // Hindi accent
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function submitPatient() {
+        const symptom = document.getElementById('symptom').value;
+        const pName = document.getElementById('patientName').value || "Voice Patient";
+        if(!symptom) { alert("Please speak symptoms first."); return; }
+        
+        // Save to localStorage
+        const patients = JSON.parse(localStorage.getItem("patients")) || [];
+        const token = "H-" + Math.floor(Math.random() * 900 + 100); // H for Hindi/Voice
+        
+        const patientData = {
+            token: token,
+            name: pName,
+            age: "Unknown",
+            phone: "N/A",
+            symptoms: [symptom],
+            history: "Recorded via Bhasha-Setu (Hindi Voice)",
+            risk: document.getElementById('pain_level').value >= 7 ? "Red" : "Yellow",
+            doctor: "General Physician",
+            time: new Date().toLocaleTimeString(),
+            status: "Waiting"
+        };
+        
+        patients.push(patientData);
+        localStorage.setItem("patients", JSON.stringify(patients));
+        
+        speakBack("Token Generated. Please wait.");
+        window.location.href = `token-view.html?token=${token}`;
+    }
+</script>
+
+</body>
+</html>

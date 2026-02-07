@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hospital Staff & Doctor Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Priority Colors */
+    tr.high {
+      background-color: #fee2e2; /* Light Red */
+    }
+    tr.medium {
+      background-color: #fef9c3; /* Light Yellow */
+    }
+    tr.low {
+      background-color: #dcfce7; /* Light Green */
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 100; 
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.5); 
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto; 
+      padding: 25px;
+      border: 1px solid #888;
+      width: 90%; 
+      max-width: 500px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover { color: black; }
+    .patient-link { color: #2563eb; cursor: pointer; text-decoration: underline; font-weight: bold; }
+
+    /* Resource Dashboard Styles */
+    .resource-dashboard {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .resource-card {
+      padding: 20px;
+      border-radius: 12px;
+      color: white;
+      min-width: 200px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .bg-red { background-color: #ef4444; }   /* Critical (< 20% available) */
+    .bg-green { background-color: #22c55e; } /* Safe (> 50% available) */
+    .bg-orange { background-color: #f59e0b; } /* Warning (In between) */
+  </style>
+</head>
+<body>
+
+<h2>Smart Hospital Staff Dashboard</h2>
+<button onclick="logout()" style="float: right; background: #ef4444;">Logout</button>
+
+<h3>Hospital Resources</h3>
+<div id="resourceDashboard" class="resource-dashboard">
+  <!-- Cards will be injected here by JS -->
+</div>
+<button onclick="simulateCriticalPatient()" style="background: #6366f1; margin-bottom: 20px;">Simulate Critical Patient</button>
+
+<h3>Add / Edit Patient</h3>
+<form id="patientForm">
+  <input type="hidden" id="editIndex">
+
+  <input type="text" id="token" placeholder="Token" required>
+  <input type="text" id="name" placeholder="Patient Name" required>
+  <input type="number" id="age" placeholder="Age" required>
+  <input type="text" id="symptoms" placeholder="Symptoms (fever, cough, chest pain...)" required>
+
+  <select id="risk">
+    <option value="High">High</option>
+    <option value="Medium">Medium</option>
+    <option value="Low">Low</option>
+  </select>
+
+  <button type="submit">Save Patient</button>
+</form>
+
+<hr>
+
+<table>
+  <thead>
+    <tr>
+      <th>Token</th>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Symptoms</th>
+      <th>Risk</th>
+      <th>Doctor</th>
+      <th>Time</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <!-- Dynamic Rows -->
+  </tbody>
+</table>
+
+<!-- Patient Detail Modal -->
+<div id="patientModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2 id="modalName" style="margin-top:0;">Patient Name</h2>
+    <hr>
+    <p><strong>Token:</strong> <span id="modalToken"></span></p>
+    <p><strong>Age:</strong> <span id="modalAge"></span></p>
+    <p><strong>Phone:</strong> <span id="modalPhone"></span></p>
+    <p><strong>Symptoms:</strong> <span id="modalSymptoms"></span></p>
+    <p><strong>History:</strong> <span id="modalHistory"></span></p>
+    <p><strong>Doctor:</strong> <span id="modalDoctor"></span></p>
+    <p><strong>Risk:</strong> <span id="modalRisk"></span></p>
+  </div>
+</div>
+
+<script src="resource-manager.js"></script>
+<script src="family-updates.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

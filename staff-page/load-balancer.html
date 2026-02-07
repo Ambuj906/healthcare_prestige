@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Doctor Load Balancer</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            padding: 40px;
+            text-align: center;
+        }
+        h1 { color: #0f172a; margin-bottom: 10px; }
+        p.subtitle { color: #64748b; margin-bottom: 40px; font-size: 1.2rem; }
+
+        /* 3. The Visual Dashboard (HTML/CSS) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto 50px;
+        }
+
+        /* Doctor Card */
+        .doctor-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: left;
+            border-top: 5px solid #cbd5e1;
+            transition: transform 0.2s;
+        }
+        .doctor-card:hover { transform: translateY(-5px); }
+
+        .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .doc-name { font-size: 1.25rem; font-weight: 700; color: #334155; }
+        .doc-specialty { font-size: 0.9rem; color: #64748b; background: #f1f5f9; padding: 4px 10px; border-radius: 20px; }
+
+        /* Progress Bar */
+        .progress-track {
+            background-color: #e2e8f0;
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s;
+            border-radius: 10px;
+        }
+
+        /* Color Coding */
+        .bg-green { background-color: #22c55e; }   /* < 50% */
+        .bg-yellow { background-color: #eab308; }  /* > 50% */
+        .bg-red { background-color: #ef4444; }     /* > 80% */
+
+        .queue-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* 4. Simulation Controls */
+        .control-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .sim-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.3s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .sim-btn:hover { background-color: #1d4ed8; transform: translateY(-2px); }
+        .sim-btn:active { transform: translateY(1px); }
+    </style>
+</head>
+<body>
+
+    <h1>Smart Doctor Load Balancer ⚖️</h1>
+    <p class="subtitle">AI-Driven Patient Assignment Simulation</p>
+
+    <div class="dashboard-grid" id="doctorContainer">
+        <!-- Cards injected by JS -->
+    </div>
+
+    <div class="control-panel">
+        <button class="sim-btn" onclick="handleIncomingPatient()">+ Incoming Patient (Cardiology)</button>
+    </div>
+
+    <script>
+        // 1. The Data Structure (Mock Doctors)
+        const doctors = [
+            { id: 1, name: "Dr. Sharma", specialty: "Cardiology", queueCount: 5, maxCapacity: 10 },
+            { id: 2, name: "Dr. Gupta", specialty: "Cardiology", queueCount: 2, maxCapacity: 10 },
+            { id: 3, name: "Dr. Lee", specialty: "Cardiology", queueCount: 8, maxCapacity: 10 }
+        ];
+
+        // 2. The Balancing Algorithm (The Logic)
+        function assignPatient(specialty) {
+            // Filter by specialty and capacity
+            const eligibleDoctors = doctors.filter(d => d.specialty === specialty && d.queueCount < d.maxCapacity);
+
+            if (eligibleDoctors.length === 0) {
+                alert("CRITICAL: All doctors are at full capacity!");
+                return null;
+            }
+
+            // Sort by queueCount (Ascending) - Least busy first
+            eligibleDoctors.sort((a, b) => a.queueCount - b.queueCount);
+
+            // Select the best doctor
+            const selectedDoc = eligibleDoctors[0];
+
+            // Increment Queue
+            selectedDoc.queueCount++;
+            return selectedDoc.name;
+        }
+
+        // UI Rendering Logic
+        function renderDoctors() {
+            const container = document.getElementById('doctorContainer');
+            container.innerHTML = '';
+
+            doctors.forEach(doc => {
+                const percentage = (doc.queueCount / doc.maxCapacity) * 100;
+                
+                // Color Logic
+                let colorClass = 'bg-green';
+                if (percentage > 80) colorClass = 'bg-red';
+                else if (percentage > 50) colorClass = 'bg-yellow';
+
+                const card = document.createElement('div');
+                card.className = 'doctor-card';
+                card.innerHTML = `
+                    <div class="doc-header">
+                        <span class="doc-name">${doc.name}</span>
+                        <span class="doc-specialty">${doc.specialty}</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill ${colorClass}" style="width: ${percentage}%"></div>
+                    </div>
+                    <div class="queue-stats">
+                        <span>Waiting: ${doc.queueCount}</span>
+                        <span>Capacity: ${doc.maxCapacity}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Simulation Handler
+        function handleIncomingPatient() {
+            const assignedName = assignPatient("Cardiology");
+            if (assignedName) {
+                renderDoctors(); // Re-render to show animation
+                // Optional: Console log for demo
+                console.log(`Patient assigned to ${assignedName}`);
+            }
+        }
+
+        // Initial Render
+        renderDoctors();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Elderly Friendly Check-in</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 { color: #0f172a; margin-bottom: 10px; }
+        p.subtitle { font-size: 1.2rem; color: #64748b; margin-bottom: 30px; }
+
+        /* Toggle Button */
+        .toggle-btn {
+            background-color: #334155;
+            color: white;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 40px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .toggle-btn:hover { background-color: #1e293b; }
+
+        /* Responsive Grid Layout */
+        .symptom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 10px;
+        }
+
+        /* Large Cards */
+        .symptom-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 5px solid transparent; /* Placeholder for critical border */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 280px;
+        }
+        .symptom-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.12);
+        }
+        .symptom-card:active { transform: scale(0.98); }
+
+        .icon { font-size: 80px; margin-bottom: 20px; }
+        .label { font-size: 28px; font-weight: 700; color: #334155; }
+
+        /* Critical Item Styling */
+        .critical {
+            border-color: #ef4444; /* Red Border */
+            background-color: #fef2f2; /* Subtle Red Background */
+        }
+        .critical .label { color: #b91c1c; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 50px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .modal-token { font-size: 72px; font-weight: 800; color: #2563eb; margin: 20px 0; display: block; }
+        .modal-msg { font-size: 24px; color: #475569; margin-bottom: 40px; }
+        .close-btn {
+            background-color: #2563eb; color: white; padding: 15px 40px;
+            font-size: 22px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;
+        }
+
+        /* Voice Input Styles */
+        .voice-section {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: inline-block;
+            min-width: 300px;
+        }
+        .voice-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        #voiceName { font-size: 24px; padding: 10px; border-radius: 10px; border: 2px solid #cbd5e1; width: 200px; text-align: center; }
+        #micBtn { font-size: 30px; background: #e2e8f0; border: none; border-radius: 50%; width: 60px; height: 60px; cursor: pointer; transition: 0.3s; }
+        #micBtn.listening { background-color: #ef4444; color: white; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Tap Your Symptom</h1>
+    <p class="subtitle">Easy Check-in Mode</p>
+    
+    <a href="index.html" class="toggle-btn">📝 Switch to Standard Form</a>
+
+    <div class="voice-section">
+        <label style="font-size: 1.2rem; font-weight: bold; color: #334155;">Say Your Name:</label>
+        <div class="voice-input-wrapper">
+            <input type="text" id="voiceName" placeholder="Tap mic..." readonly>
+            <button id="micBtn" onclick="startListening()">🎙️</button>
+        </div>
+        <p id="voiceStatus" style="color: #64748b; margin-top: 10px; min-height: 20px;">Tap the mic and speak</p>
+    </div>
+
+    <div class="symptom-grid" id="gridContainer">
+        <!-- Cards injected by JS -->
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="tokenModal" class="modal">
+    <div class="modal-content">
+        <h2>Check-in Successful!</h2>
+        <span class="modal-token" id="modalTokenDisplay">#--</span>
+        <p class="modal-msg" id="modalMessage">Please wait...</p>
+        <button class="close-btn" onclick="window.location.href='index.html'">Done</button>
+    </div>
+</div>
+
+<script>
+    // 1. The Data Structure
+    const symptomsList = [
+        { id: 1, label: "Chest Pain", icon: "🫀", severity: "Critical", color: "#ffcccc" },
+        { id: 2, label: "High Fever", icon: "🤒", severity: "Urgent", color: "#fff3cd" },
+        { id: 3, label: "Knee/Joint Pain", icon: "🦵", severity: "Low", color: "#d1e7dd" },
+        { id: 4, label: "Breathing Trouble", icon: "🫁", severity: "Critical", color: "#ffcccc" },
+        { id: 5, label: "Stomach Ache", icon: "🤢", severity: "Medium", color: "#fff3cd" }
+    ];
+
+    // 2. Render UI
+    const grid = document.getElementById('gridContainer');
+    symptomsList.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `symptom-card ${item.severity === 'Critical' ? 'critical' : ''}`;
+        if(item.severity !== 'Critical') card.style.backgroundColor = item.color;
+        
+        card.innerHTML = `<div class="icon">${item.icon}</div><div class="label">${item.label}</div>`;
+        card.onclick = () => generateToken(item); // 3. Interaction Trigger
+        grid.appendChild(card);
+    });
+
+    // 3. Interaction Logic
+    function generateToken(symptomObject) {
+        const nameInput = document.getElementById('voiceName');
+        const patientName = nameInput.value || "Elderly Patient";
+
+        // Save to System (LocalStorage) so Staff can see it
+        const patients = JSON.parse(localStorage.getItem("patients")) || [];
+        const token = "E-" + Math.floor(Math.random() * 900 + 100); // E for Elderly
+
+        const patientData = {
+            token: token,
+            name: patientName,
+            age: "65+", 
+            phone: "N/A",
+            symptoms: [symptomObject.label],
+            history: "Registered via Elderly Mode",
+            risk: symptomObject.severity === 'Critical' ? 'Red' : (symptomObject.severity === 'Urgent' ? 'Yellow' : 'Green'),
+            doctor: symptomObject.severity === 'Critical' ? 'Emergency Physician' : 'General Physician',
+            time: new Date().toLocaleTimeString(),
+            status: "Waiting"
+        };
+
+        patients.push(patientData);
+        localStorage.setItem("patients", JSON.stringify(patients));
+        
+        // Show Modal
+        const modal = document.getElementById('tokenModal');
+        document.getElementById('modalTokenDisplay').innerText = token;
+        document.getElementById('modalMessage').innerText = `Hello ${patientName}. Please wait in ${symptomObject.severity === 'Critical' ? 'Emergency Zone' : 'Zone A'}.`;
+        modal.style.display = 'flex';
+    }
+
+    // 4. Voice Recognition Logic
+    function startListening() {
+        const status = document.getElementById('voiceStatus');
+        const nameInput = document.getElementById('voiceName');
+        const btn = document.getElementById('micBtn');
+
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            alert("Voice recognition is not supported in this browser. Please use Chrome.");
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => { status.innerText = "Listening..."; btn.classList.add('listening'); };
+        recognition.onend = () => { status.innerText = "Done"; btn.classList.remove('listening'); };
+        recognition.onresult = (event) => { nameInput.value = event.results[0][0].transcript; };
+        
+        recognition.start();
+    }
+</script>
+
+</body>
+</html>
