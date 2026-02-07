@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Smart Hospital</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        :root {
+            --primary: #4f46e5; /* Indigo-600 */
+            --primary-light: #e0e7ff;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        /* Sidebar & Layout */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: white;
+            padding: 25px;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 { margin: 0; font-size: 32px; color: #0f172a; }
+        .date-badge {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--secondary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s ease;
+            border: 1px solid #f1f5f9;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.06); }
+
+        .stat-icon {
+            width: 64px; height: 64px;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px;
+        }
+        .bg-blue { background: #e0e7ff; color: #4f46e5; }
+        .bg-green { background: #dcfce7; color: #16a34a; }
+        .bg-orange { background: #ffedd5; color: #ea580c; }
+        .bg-red { background: #fee2e2; color: #dc2626; }
+
+        .stat-info h3 { margin: 0; font-size: 36px; color: var(--text-main); font-weight: 800; }
+        .stat-info p { margin: 5px 0 0 0; color: var(--secondary); font-size: 15px; font-weight: 500; }
+
+        /* Bed Management Section */
+        .section-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+
+        .bed-tracker-container {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            margin-bottom: 40px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .bed-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .bed-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .bed-box:hover { border-color: var(--primary-light); background: #fff; }
+        
+        .bed-box h4 { margin: 0 0 20px 0; color: var(--secondary); font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .counter-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .ctrl-btn {
+            width: 45px; height: 45px;
+            border-radius: 14px;
+            border: none;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary);
+            transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ctrl-btn:hover { background: var(--primary); color: white; transform: scale(1.1); }
+        
+        .count-display { font-size: 42px; font-weight: 800; color: var(--text-main); min-width: 60px; }
+
+        /* Patient Table */
+        .table-container {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; padding: 15px 20px; color: var(--secondary); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        td { padding: 20px; background: #f8fafc; font-weight: 600; color: #334155; }
+        
+        tr td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+        tr td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .status-waiting { background: #fff7ed; color: #c2410c; }
+        .status-active { background: #f0fdf4; color: #15803d; }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+        }
+        .action-btn:hover { background: #4338ca; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">🏥 SmartStaff</div>
+        <nav>
+            <a href="#" class="nav-item active">📊 Dashboard</a>
+            <a href="#" class="nav-item">🛏️ Bed Manager</a>
+            <a href="#" class="nav-item">👥 Patients</a>
+            <a href="../index.html" class="nav-item" style="margin-top: auto; color: #ef4444; background: #fef2f2;">🚪 Logout</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h1>Good Morning, Staff! 👋</h1>
+                <p style="color: var(--secondary); margin-top: 8px; font-size: 16px;">Here is what's happening in the hospital today.</p>
+            </div>
+            <div class="date-badge" id="currentDate">Oct 24, 2023</div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-blue">👥</div>
+                <div class="stat-info">
+                    <h3 id="totalPatients">0</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-orange">⏳</div>
+                <div class="stat-info">
+                    <h3 id="waitingCount">0</h3>
+                    <p>Waiting</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-red">🚨</div>
+                <div class="stat-info">
+                    <h3 id="criticalCount">0</h3>
+                    <p>Critical</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-green">👨‍⚕️</div>
+                <div class="stat-info">
+                    <h3>8</h3>
+                    <p>Doctors Active</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bed Management -->
+        <h3 class="section-title">🏥 Live Bed Availability</h3>
+        <div class="bed-tracker-container">
+            <div class="bed-grid">
+                <div class="bed-box">
+                    <h4>ICU Beds (Critical)</h4>
+                    <div class="counter-wrapper">
+                        <button class="ctrl-btn" onclick="updateBed('icu', -1)">-</button>
+                        <span id="icuCount" class="count-display">3</span>
+                        <button class="ctrl-btn" onclick="updateBed('icu', 1)">+</button>
+                    </div>
+                </div>
+                <div class="bed-box">
+                    <h4>General Ward Beds</h4>
+                    <div class="counter-wrapper">
+                        <button class="ctrl-btn" onclick="updateBed('gen', -1)">-</button>
+                        <span id="genCount" class="count-display">12</span>
+                        <button class="ctrl-btn" onclick="updateBed('gen', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Patients -->
+        <h3 class="section-title">📋 Recent Patient Queue</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Name</th>
+                        <th>Symptoms</th>
+                        <th>Risk</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="patientTableBody">
+                    <!-- JS will populate this -->
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:#94a3b8; padding: 40px;">No patients yet...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Date Logic
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // 2. Bed Management Logic
+    let beds = JSON.parse(localStorage.getItem('hospitalBeds')) || { icu: 3, gen: 12 };
+
+    function renderBeds() {
+        document.getElementById('icuCount').innerText = beds.icu;
+        document.getElementById('genCount').innerText = beds.gen;
+    }
+
+    function updateBed(type, change) {
+        if (type === 'icu') beds.icu = Math.max(0, beds.icu + change);
+        if (type === 'gen') beds.gen = Math.max(0, beds.gen + change);
+        localStorage.setItem('hospitalBeds', JSON.stringify(beds));
+        renderBeds();
+    }
+    renderBeds();
+
+    // 3. Patient Data Logic
+    function loadPatients() {
+        const patients = JSON.parse(localStorage.getItem("patients")) || [];
+        const tbody = document.getElementById('patientTableBody');
+        
+        // Update Stats
+        document.getElementById('totalPatients').innerText = patients.length;
+        document.getElementById('waitingCount').innerText = patients.filter(p => p.status === 'Waiting').length;
+        document.getElementById('criticalCount').innerText = patients.filter(p => p.risk === 'Red').length;
+
+        if(patients.length === 0) return;
+
+        tbody.innerHTML = '';
+        // Show latest first
+        patients.slice().reverse().forEach((p, index) => {
+            const row = document.createElement('tr');
+            
+            let riskColor = '#22c55e'; // Green
+            if(p.risk === 'Red') riskColor = '#ef4444';
+            if(p.risk === 'Yellow') riskColor = '#eab308';
+
+            row.innerHTML = `
+                <td><span style="background:#e0e7ff; color: #4338ca; padding:6px 12px; border-radius:8px; font-weight:bold;">${p.token}</span></td>
+                <td>${p.name}</td>
+                <td>${p.symptoms.join(', ')}</td>
+                <td><span style="color:${riskColor}; font-weight:bold;">● ${p.risk}</span></td>
+                <td><span class="status-badge status-waiting">${p.status}</span></td>
+                <td><button class="action-btn" onclick="admitPatient('${p.token}')">Admit</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function admitPatient(token) {
+        alert(`Admitting Patient ${token}...`);
+        // In a real app, this would update status in localStorage
+    }
+
+    // Auto-refresh patient list every 5 seconds
+    loadPatients();
+    setInterval(loadPatients, 5000);
+
+</script>
+
+</body>
+</html>

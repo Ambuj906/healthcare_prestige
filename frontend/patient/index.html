@@ -5,6 +5,72 @@
     <title>Patient Details</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #f1f5f9;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+            margin: auto;
+        }
+        h2 { text-align: center; margin-top: 0; }
+        input[type="text"], input[type="number"], input[type="tel"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .symptoms-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .symptom-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+        }
+        .symptom-label:hover { background: #f8fafc; border-color: #cbd5e1; }
+        input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+    </style>
 </head>
 <body>
 
@@ -30,25 +96,21 @@
         <input type="tel" required>
 
         <label>Symptoms</label>
-        <div class="symptoms">
-            <label class="symptom-item">
-                <input type="checkbox"> Fever
+        <div class="symptoms-grid">
+            <label class="symptom-label">
+                <input type="checkbox"> <span>Fever</span>
             </label>
-
-            <label class="symptom-item">
-                <input type="checkbox"> Cough
+            <label class="symptom-label">
+                <input type="checkbox"> <span>Cough</span>
             </label>
-
-            <label class="symptom-item">
-                <input type="checkbox"> Chest Pain
+            <label class="symptom-label">
+                <input type="checkbox"> <span>Chest Pain</span>
             </label>
-
-            <label class="symptom-item">
-                <input type="checkbox"> Breathlessness
+            <label class="symptom-label">
+                <input type="checkbox"> <span>Breathlessness</span>
             </label>
-
-            <label class="symptom-item">
-                <input type="checkbox"> Fatigue
+            <label class="symptom-label">
+                <input type="checkbox"> <span>Fatigue</span>
             </label>
         </div>
 

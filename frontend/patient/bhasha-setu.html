@@ -224,11 +224,11 @@
         let duration = "Unknown";
 
         // Name Extraction (Simple)
-        if (text.includes("naam") || text.includes("name")) {
-            const parts = text.split(/naam|name/);
+        if (text.includes("naam") || text.includes("name") || text.includes("नाम")) {
+            const parts = text.split(/naam|name|नाम/);
             if (parts[1]) {
                 const extractedName = parts[1].trim().split(" ")[0]; // Get first word after "naam"
-                if (extractedName && !["hai", "is", "mera", "my"].includes(extractedName)) {
+                if (extractedName && !["hai", "is", "mera", "my", "है", "मेरा"].includes(extractedName)) {
                     fillField("patientName", extractedName);
                 }
             }
@@ -236,13 +236,14 @@
 
         // Expanded Keyword Mapping (Optimized)
         const symptomMap = [
-            { keywords: ["chaati", "dil", "chest", "heart", "attack"], label: "Chest Pain", pain: 10 },
-            { keywords: ["saans", "breath", "asthma"], label: "Breathing Difficulty", pain: 9 },
-            { keywords: ["khoon", "bleeding", "cut", "chot", "accident", "takkar"], label: "Bleeding / Trauma", pain: 9 },
-            { keywords: ["bukhar", "fever", "garam", "tap"], label: "High Fever", pain: 7 },
-            { keywords: ["pet", "stomach", "dard", "pain"], label: "Stomach Pain", pain: 6 },
-            { keywords: ["sar", "sir", "head", "headache"], label: "Severe Headache", pain: 5 },
-            { keywords: ["ulti", "vomit", "chakkar"], label: "Vomiting / Dizziness", pain: 5 }
+            { keywords: ["chaati", "dil", "chest", "heart", "attack", "छाती", "दिल", "हार्ट", "अटैक", "सीना", "चेस्ट"], label: "Chest Pain", pain: 10 },
+            { keywords: ["saans", "breath", "asthma", "सांस", "साँस", "दम", "breathing"], label: "Breathing Difficulty", pain: 9 },
+            { keywords: ["khoon", "bleeding", "cut", "chot", "accident", "takkar", "खून", "रक्त", "चोट", "एक्सीडेंट", "टक्कर"], label: "Bleeding / Trauma", pain: 9 },
+            { keywords: ["bukhar", "fever", "garam", "tap", "बुखार", "ताप", "गर्म"], label: "High Fever", pain: 7 },
+            { keywords: ["pet", "stomach", "abdomen", "पेट"], label: "Stomach Pain", pain: 6 },
+            { keywords: ["sar", "sir", "head", "headache", "सर", "सिर", "माथा"], label: "Severe Headache", pain: 5 },
+            { keywords: ["ulti", "vomit", "chakkar", "उल्टी", "चक्कर", "dizziness"], label: "Vomiting / Dizziness", pain: 5 },
+            { keywords: ["dard", "pain", "dukh", "दर्द", "दुख", "पेन"], label: "General Severe Pain", pain: 6 }
         ];
 
         for (let item of symptomMap) {
